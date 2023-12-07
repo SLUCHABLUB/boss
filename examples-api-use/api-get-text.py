@@ -12,15 +12,13 @@ import subprocess
 import threading
 import random
 import os
+import glob
 
 pathToFiles = '/home/pi/rpi-rgb-led-matrix/examples-api-use/'
-baseArguments = '--led-rows=32 --led-cols=64 --led-chain=3 --led-gpio-mapping=adafruit-hat-pwm --led-slowdown-gpio=10 --led-show-refresh'
+baseArguments = '--led-rows=32 --led-cols=64 --led-chain=3 --led-gpio-mapping=adafruit-hat-pwm --led-slowdown-gpio=15 --led-show-refresh'
 
-videos_folder = '/home/pi/videos'
-bee_movie_frames = 130453
-bee_movie_fps = 24
-bee_movie_seconds_per_loop = 5
-bee_movie_current_frame = 0
+videos_folder = '/home/pi/boss_videos'
+video_extentions = ["mp4", "gif", "webm"]
 
 #A dictionary used to convert the URL arguments to valid arguments for the underlying program
 argumentConvertDictionary = {
@@ -66,25 +64,22 @@ def runTextOnLED():
 
 def runDemosOnLoop():
     choice = random.randint(1, 13)
-    choice = 8
     if choice <= 3:
         algorithmsAndDelays = [('insertion', 10), ('cocktail', 100)]
         algo, delay = random.choice(algorithmsAndDelays)
         cmd = f'{pathToFiles}sort -s {algo} {baseArguments} -C 252,128,161 -d {delay}'.split(' ')
     elif choice <= 6:
         cmd = f'{pathToFiles}mandelbrot -d 160 -z 1.11 -i 250 -t 160 {baseArguments}'.split(' ')
-    elif choice <= 1:
-        frames_to_play = bee_movie_seconds_per_loop*bee_movie_fps
-        global bee_movie_current_frame
-        cmd = f'/home/pi/rpi-rgb-led-matrix/utils/video-viewer {baseArguments} -F -s{bee_movie_current_frame} -c{frames_to_play} {videos_folder}/beemovie.mp4'.split(' ')
-        bee_movie_current_frame += frames_to_play
-        if bee_movie_current_frame >= bee_movie_frames:
-            bee_movie_current_frame = 0
+    elif choice <= 10:
+        videos = []
+        for extension in video_extentions:
+            videos.extend(glob.glob(f'{videos_folder}/*.{extension}'))
+        video = random.choice(videos)
+        cmd = f'/home/pi/rpi-rgb-led-matrix/utils/video-viewer {baseArguments} -F {video}'.split(' ')
     else:
         demoNumbers = [4, 7, 7, 7, 9, 10]	#"game of life"-demo is weighted
         randomDemo = random.choice(demoNumbers)
         cmd = f'{pathToFiles}demo -D {randomDemo} {baseArguments}'.split(' ')
-    print(cmd)
     return subprocess.Popen(cmd, stdin=None, stdout=None)
 
 @post('/sendText')
