@@ -24,6 +24,7 @@ $(RGB_LIBRARY): FORCE
 demo : demo-main.o $(RGB_LIBRARY)
 	$(CXX) $< -o $@ $(LDFLAGS)
 
+choochoo : choochoo.o
 minimal-example : minimal-example.o
 input-example : input-example.o
 text-example: text-example.o

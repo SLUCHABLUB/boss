@@ -63,7 +63,7 @@ def runTextOnLED():
         sleep(1)
 
 def runDemosOnLoop():
-    choice = random.randint(1, 13)
+    choice = random.randint(1, 16)
     if choice <= 3:
         algorithmsAndDelays = [('insertion', 10), ('cocktail', 100)]
         algo, delay = random.choice(algorithmsAndDelays)
@@ -76,6 +76,8 @@ def runDemosOnLoop():
             videos.extend(glob.glob(f'{videos_folder}/*.{extension}'))
         video = random.choice(videos)
         cmd = f'/home/pi/rpi-rgb-led-matrix/utils/video-viewer {baseArguments} -F {video}'.split(' ')
+    elif choice <= 13:
+        cmd = f'{pathToFiles}choochoo {baseArguments}'.split(' ')
     else:
         demoNumbers = [4, 7, 7, 7, 9, 10]	#"game of life"-demo is weighted
         randomDemo = random.choice(demoNumbers)
