@@ -1,6 +1,7 @@
 #ifndef _CHOOCHOO_H_
 #define _CHOOCHOO_H_
 
+
 #define VAGN_E "                              "
 #define VAGN0  "        @@@@@    @@@@@        "
 #define VAGN1  "  @@   @     @  @     @   @@  "
@@ -69,11 +70,6 @@
 #define LOK17_3  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " VAGN13
 
 #define LOK18    "        @@   @@    @@@     @@@     @@@         " VAGN14
-
-
-
-
-
 
 
 #endif
