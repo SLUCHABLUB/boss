@@ -1,5 +1,6 @@
 #include "choochoo.h"
 
+#include "common.h"
 #include "led-matrix.h"
 #include "graphics.h"
 
@@ -200,7 +201,7 @@ int main(int argc, char** argv)
 {
     rgb_matrix::RGBMatrix::Options matrix_options;
 	rgb_matrix::RuntimeOptions runtime_opt;
-	matrix_options.hardware_mapping = "adafruit-hat";
+	matrix_options.hardware_mapping = HW_ID;
 	matrix_options.rows = LED_MATRIX_HEIGHT;
 	matrix_options.cols = LED_MATRIX_WIDTH;
 	matrix_options.chain_length = BOSS_WIDTH;
@@ -235,7 +236,7 @@ int main(int argc, char** argv)
 
 	std::vector<int**> iw {wheels_0, wheels_1, wheels_2, wheels_3};
 
-	for (size_t i = 0; i < ANIM_LENGTH - 70; i++)
+	for (size_t i = 0; i < ANIM_LENGTH - 70; i++) // magic offset
 	{
 		// animate
 		smoke_frame = i % 6 > 2 ? 1 : 0; // animate smoke every third frame
@@ -243,7 +244,6 @@ int main(int argc, char** argv)
 
 		smoke = smoke_frame == 1 ? &smoke_1 : &smoke_0;
 		wheels = &iw[wheel_frame];
-
 
 		// draw train
 		offscreen_canvas->Fill(0, 0, 0);
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
 			smoke_0[j]++;
 			smoke_1[j]++;
 		}
-		usleep(1000*40);
+		usleep(1000 * 40); // Magic number go brrr
 	}
 
     return 0;
