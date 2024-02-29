@@ -68,7 +68,7 @@ def runDemosOnLoop():
         algorithmsAndDelays = [('insertion', 10), ('cocktail', 100)]
         algo, delay = random.choice(algorithmsAndDelays)
         cmd = f'{pathToFiles}sort -s {algo} {baseArguments} -C 252,128,161 -d {delay}'.split(' ')
-    elif choice <= 6:
+    elif choice <= 5:
         cmd = f'{pathToFiles}mandelbrot -d 160 -z 1.11 -i 250 -t 160 {baseArguments}'.split(' ')
     elif choice <= 10:
         videos = []
