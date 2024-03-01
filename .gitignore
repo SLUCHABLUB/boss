@@ -1,6 +1,12 @@
+*
+!/**/
+!*.*
+
 *.o
 *.a
 *~
 *.so
 .envrc
 .direnv
+
+/.vscode
