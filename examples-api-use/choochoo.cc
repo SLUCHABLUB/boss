@@ -220,6 +220,8 @@ int main(int argc, char** argv)
 
 	auto* offscreen_canvas = rgb_mat->CreateFrameCanvas();
 
+	while(1);
+
 	int wheel_frame = 0;
 	int smoke_frame = 0;
 
