@@ -7,10 +7,6 @@
 #include <unistd.h>
 #include <string.h>
 
-constexpr int LED_MATRIX_HEIGHT = 32;
-constexpr int LED_MATRIX_WIDTH = 64;
-constexpr int BOSS_WIDTH = 3;
-constexpr int BOSS_MATRIX_WIDTH = BOSS_WIDTH * LED_MATRIX_WIDTH;
 
 constexpr int ROWS = LED_MATRIX_HEIGHT;
 constexpr int COLS = BOSS_MATRIX_WIDTH * 2;
@@ -220,7 +216,7 @@ int main(int argc, char** argv)
 
 	auto* offscreen_canvas = rgb_mat->CreateFrameCanvas();
 
-	while(1);
+	//while(1);
 
 	int wheel_frame = 0;
 	int smoke_frame = 0;

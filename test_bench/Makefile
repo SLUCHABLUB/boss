@@ -6,7 +6,7 @@ CXX:=g++
 
 all: test_bench
 
-test_bench: boss_test_bench.o sfml_matrix.o ../examples-api-use/choochoo.o
+test_bench: sfml_matrix.o ../examples-api-use/$(ARGS).o
 	$(CXX) -I$(RGB_INCDIR) $^ $(CXXFLAGS)  -o $@ $(LDFLAGS)
 
 %.o: %.cc

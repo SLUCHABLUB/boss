@@ -9,7 +9,7 @@
 #include <SFML/Graphics.hpp>
 #include <string.h>
 
-#define LED_RADIUS_PIXELS 4
+#define LED_RADIUS_PIXELS 2
 
 #define OPTION_PREFIX "--led-"
 #define OPTION_PREFIX_LEN strlen(OPTION_PREFIX)
@@ -27,8 +27,10 @@ public:
             led_matrix.emplace_back();
             for (int j = 0; j < h; j++)
             {
-                sf::CircleShape c(LED_RADIUS_PIXELS);
+                sf::CircleShape c(LED_RADIUS_PIXELS, 8);
                 led_matrix[i].push_back(c);
+				int offset = LED_RADIUS_PIXELS + 2;
+				led_matrix[i][j].setPosition(offset + i * (LED_RADIUS_PIXELS + 1) * 2, offset + j * (LED_RADIUS_PIXELS + 1) * 2 + 1);
             }
         }
     }
@@ -58,8 +60,12 @@ public:
         }
     }
 
-private:
+	const std::vector<std::vector<sf::CircleShape>>& matrix()
+	{
+		return led_matrix;
+	}
 
+private:
 
     int w;
     int h;
@@ -71,7 +77,7 @@ class SFMLThread
 {
 public:
 
-	SFMLThread() : th(&SFMLThread::run, this)
+	SFMLThread(int w, int h) : th(&SFMLThread::run, this)
 	{
 		th.detach();
 	}
@@ -79,7 +85,8 @@ public:
     void run()
     {
 		sf::RenderWindow window;
-		window.create(sf::VideoMode(1280, 720), "Boss");
+		window.create(sf::VideoMode(1280, 720), "Godis");
+		window.setFramerateLimit(60);
 
 		sf::Clock clock;
 		float deltaTime;
@@ -101,12 +108,41 @@ public:
 				}
 			}
 
+			if (canvas == nullptr)
+				continue;
+
+			window.clear();
+
+			sync.lock();
+			for (int i = 0; i < canvas->width(); i++)
+			{
+				for (int j = 0; j < canvas->height(); j++)
+				{
+					window.draw(canvas->matrix()[i][j]);
+				}
+			}
+			sync.unlock();
+
+			window.display();
 		}
 	}
+
+	void setCanvas(SFMLCanvas *c)
+	{
+		sync.lock();
+		canvas = c;
+		sync.unlock();
+	}
+
+
+
 private:
 
+	SFMLCanvas *canvas;
 	std::thread th;
 	std::mutex sync;
+
+	int height, width;
 
 };
 
@@ -147,7 +183,7 @@ private:
 
 RGBMatrix::Impl::Impl(const Options &opt) : options(opt)
 {
-	th = new SFMLThread();
+	th = new SFMLThread(options.rows, options.cols * options.chain_length);
 }
 
 RGBMatrix::Impl::~Impl()
@@ -165,16 +201,17 @@ RGBMatrix::~RGBMatrix()
 FrameCanvas *RGBMatrix::Impl::CreateFrameCanvas()
 {
     SFMLCanvas *c = new SFMLCanvas(options.rows, options.cols * options.chain_length);
-
+	c->Fill(255,255,255);
     canvases.push_back(c);
+	active_canvas = c;
+	th->setCanvas(c);
 
     return c;
 }
 
 FrameCanvas *RGBMatrix::Impl::SwapOnVSync(FrameCanvas *other, unsigned frame_fraction)
 {
-
-    return nullptr;
+    return other;
 }
 
 
@@ -589,4 +626,13 @@ bool ParseOptionsFromFlags(int *argc, char ***argv, rgb_matrix::RGBMatrix::Optio
 
 	return FlagInit(*argc, *argv, mopt, ropt, remove_consumed_options);
 }
+
+void PrintMatrixFlags(FILE *out,
+                      const RGBMatrix::Options &defaults,
+                      const RuntimeOptions &rt_opt)
+					  {
+
+					  }
+
+
 }
