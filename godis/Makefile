@@ -4,15 +4,15 @@ LDFLAGS=-lsfml-graphics -lsfml-window -lsfml-system
 RGB_INCDIR=../include
 CXX:=g++
 
-all: test_bench
+all: godis
 
-test_bench: sfml_matrix.o ../examples-api-use/$(ARGS).o
-	$(CXX) -I$(RGB_INCDIR) $^ $(CXXFLAGS)  -o $@ $(LDFLAGS)
+godis: sfml_matrix.o ../examples-api-use/$(ARGS).o
+	$(CXX) -I$(RGB_INCDIR) $^ $(CXXFLAGS) -o $@ $(LDFLAGS)
 
 %.o: %.cc
 	$(CXX) -I$(RGB_INCDIR) $(CXXFLAGS) -c $< -o $@ $(LDFLAGS)
 
 clean:
-	rm -f test_bench *.o
+	rm -f godis *.o
 
 .PHONY: all
