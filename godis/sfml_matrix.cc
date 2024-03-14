@@ -1,15 +1,16 @@
 #include "led-matrix.h"
 
-
+#include <chrono>
 #include <thread>
 #include <mutex>
 #include <vector>
 #include <iostream>
+#include <cstdlib>
 
 #include <SFML/Graphics.hpp>
 #include <string.h>
 
-#define LED_RADIUS_PIXELS 2
+#define LED_RADIUS_PIXELS 3
 
 #define OPTION_PREFIX "--led-"
 #define OPTION_PREFIX_LEN strlen(OPTION_PREFIX)
@@ -27,15 +28,18 @@ public:
             led_matrix.emplace_back();
             for (int j = 0; j < h; j++)
             {
-                sf::CircleShape c(LED_RADIUS_PIXELS, 8);
+                sf::CircleShape c(LED_RADIUS_PIXELS, 20);
                 led_matrix[i].push_back(c);
-				int offset = LED_RADIUS_PIXELS + 2;
+				int offset = LED_RADIUS_PIXELS + 20;
 				led_matrix[i][j].setPosition(offset + i * (LED_RADIUS_PIXELS + 1) * 2, offset + j * (LED_RADIUS_PIXELS + 1) * 2 + 1);
-            }
+				led_matrix[i][j].setOutlineColor(sf::Color(64, 64, 64));
+				led_matrix[i][j].setOutlineThickness(1);
+			}
         }
     }
 
     virtual ~SFMLCanvas() {}
+
 
     int width() const override {return w;}
     int height() const override {return h;}
@@ -66,35 +70,33 @@ public:
 	}
 
 private:
-
     int w;
     int h;
     std::vector<std::vector<sf::CircleShape>> led_matrix {};
 
 };
 
+
 class SFMLThread
 {
 public:
 
-	SFMLThread(int w, int h) : th(&SFMLThread::run, this)
+	SFMLThread(int w, int h) : th(&SFMLThread::run, this), next_canvas(nullptr) {}
+
+	~SFMLThread()
 	{
-		th.detach();
+		running = false;
+		th.join();
 	}
 
     void run()
     {
 		sf::RenderWindow window;
-		window.create(sf::VideoMode(1280, 720), "Godis");
-		window.setFramerateLimit(60);
+		window.create(sf::VideoMode(1920, 720), "Godis");
 
-		sf::Clock clock;
-		float deltaTime;
 		sf::Event event;
-		while (window.isOpen())
+		while (window.isOpen() && running)
 		{
-			deltaTime = clock.restart().asSeconds();
-
 			// Handle events
 			while (window.pollEvent(event))
 			{
@@ -108,20 +110,26 @@ public:
 				}
 			}
 
-			if (canvas == nullptr)
+			if (current_canvas == nullptr)
 				continue;
 
 			window.clear();
 
 			sync.lock();
-			for (int i = 0; i < canvas->width(); i++)
+			for (int i = 0; i < current_canvas->width(); i++)
 			{
-				for (int j = 0; j < canvas->height(); j++)
+				for (int j = 0; j < current_canvas->height(); j++)
 				{
-					window.draw(canvas->matrix()[i][j]);
+					window.draw(current_canvas->matrix()[i][j]);
 				}
 			}
 			sync.unlock();
+
+			if (next_canvas != nullptr)
+			{
+				current_canvas = next_canvas;
+				next_canvas = nullptr;
+			}
 
 			window.display();
 		}
@@ -130,17 +138,25 @@ public:
 	void setCanvas(SFMLCanvas *c)
 	{
 		sync.lock();
-		canvas = c;
+		current_canvas = c;
 		sync.unlock();
 	}
 
-
+	SFMLCanvas* SwapOnVSync(SFMLCanvas *other)
+	{
+		sync.lock();
+		SFMLCanvas* prev = current_canvas;
+		next_canvas = other;
+		sync.unlock();
+		return prev;
+	}
 
 private:
-
-	SFMLCanvas *canvas;
+	bool running {true};
 	std::thread th;
 	std::mutex sync;
+	SFMLCanvas *current_canvas;
+	SFMLCanvas *next_canvas;
 
 	int height, width;
 
@@ -196,8 +212,6 @@ RGBMatrix::~RGBMatrix()
     delete impl_;
 }
 
-
-
 FrameCanvas *RGBMatrix::Impl::CreateFrameCanvas()
 {
     SFMLCanvas *c = new SFMLCanvas(options.rows, options.cols * options.chain_length);
@@ -209,9 +223,15 @@ FrameCanvas *RGBMatrix::Impl::CreateFrameCanvas()
     return c;
 }
 
-FrameCanvas *RGBMatrix::Impl::SwapOnVSync(FrameCanvas *other, unsigned frame_fraction)
+FrameCanvas *RGBMatrix::Impl::SwapOnVSync(FrameCanvas *other, unsigned frame_fraction = 0)
 {
-    return other;
+	if (frame_fraction)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned)((1.f /(float)frame_fraction) * 1000)));
+	}
+
+	FrameCanvas *prev = th->SwapOnVSync((SFMLCanvas*)other);
+    return prev;
 }
 
 

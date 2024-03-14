@@ -187,9 +187,9 @@ rgb_matrix::FrameCanvas* draw_frame(rgb_matrix::RGBMatrix* rgb_mat, rgb_matrix::
 
 rgb_matrix::FrameCanvas* draw_lok(rgb_matrix::RGBMatrix* rgb_mat, rgb_matrix::FrameCanvas *offscreen_canvas, int** lok_static, int** wheels, int** smoke)
 {
-	offscreen_canvas->Fill(0, 0, 0);
+	offscreen_canvas->Clear();
 	offscreen_canvas = draw_frame(rgb_mat, offscreen_canvas, lok_static, wheels, smoke);
-	return rgb_mat->SwapOnVSync(offscreen_canvas);
+	return rgb_mat->SwapOnVSync(offscreen_canvas, 25);
 }
 
 
@@ -216,18 +216,16 @@ int main(int argc, char** argv)
 
 	auto* offscreen_canvas = rgb_mat->CreateFrameCanvas();
 
-	//while(1);
-
 	int wheel_frame = 0;
 	int smoke_frame = 0;
 
-	auto* lok_static = calc_lok_matrix();
-	auto* smoke_0 = calc_smoke_matrix(0);
-	auto* smoke_1 = calc_smoke_matrix(1);
-	auto* wheels_0 = calc_wheel_matrix(0);
-	auto* wheels_1 = calc_wheel_matrix(1);
-	auto* wheels_2 = calc_wheel_matrix(2);
-	auto* wheels_3 = calc_wheel_matrix(3);
+	auto *lok_static = calc_lok_matrix();
+	auto *smoke_0 = calc_smoke_matrix(0);
+	auto *smoke_1 = calc_smoke_matrix(1);
+	auto *wheels_0 = calc_wheel_matrix(0);
+	auto *wheels_1 = calc_wheel_matrix(1);
+	auto *wheels_2 = calc_wheel_matrix(2);
+	auto *wheels_3 = calc_wheel_matrix(3);
 
 	auto* smoke = &smoke_0;
 	auto* wheels = &wheels_0;
@@ -258,8 +256,10 @@ int main(int argc, char** argv)
 			smoke_0[j]++;
 			smoke_1[j]++;
 		}
-		usleep(1000 * 40); // Magic number go brrr
+		//usleep(1000 * 40); // Magic number go brrr
 	}
+
+	delete rgb_mat;
 
     return 0;
 }

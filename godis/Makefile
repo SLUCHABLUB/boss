@@ -6,7 +6,7 @@ CXX:=g++
 
 all: godis
 
-godis: sfml_matrix.o ../examples-api-use/$(ARGS).o
+godis: sfml_matrix.o  ../examples-api-use/$(ARGS).o
 	$(CXX) -I$(RGB_INCDIR) $^ $(CXXFLAGS) -o $@ $(LDFLAGS)
 
 %.o: %.cc

@@ -7,9 +7,9 @@
 #define VAGN1  "  @@   @     @  @     @   @@  "
 #define VAGN2  "  @ @@@@@@@@@@@@@@@@@@@@@@ @  "
 #define VAGN3  "  @@@ @                @ @@@  "
-#define VAGN4  "    @ @                @ @    "
+#define VAGN4  "    @ @ @@ @ @   @ @ @ @ @    "
 #define VAGN5  "    @ @                @ @    "
-#define VAGN6  "    @ @                @ @    "
+#define VAGN6  "    @ @   @    @@ @ @@ @ @    "
 #define VAGN7  "   @@ @                @ @@   "
 #define VAGN8  "  @ @ @                @ @ @  "
 #define VAGN9  "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -24,7 +24,7 @@
 #define SMOKE1_0 "                                                                  "
 #define SMOKE2_0 "             @@@@                                                 "
 #define SMOKE3_0 "                                                                  "
-#define SMOKE4_0 "          @@@                                                     "
+#define SMOKE4_0 "          @@                                                      "
 #define SMOKE0_1 "                      @@@@    @@@     @      @       @      @     "
 #define SMOKE1_1 "                 @@@@                                             "
 #define SMOKE2_1 "                                                                  "
@@ -32,9 +32,9 @@
 #define SMOKE4_1 "                                                                  "
 
 #define LOK0     "         @@@@                                  " VAGN_E
-#define LOK1     "        @    @          @@@@@@     @@@@@@@@@@@ " VAGN_E
+#define LOK1     "        @    @          @@@@@@     @@@@@@@@@@@@" VAGN_E
 #define LOK2     "         @  @           @    @    @           @" VAGN_E
-#define LOK3     "         @  @           @    @  @ @@@@@@@@@@@@@" VAGN_E
+#define LOK3     "         @  @           @    @  @ @@@@@@@@@@@@ " VAGN_E
 #define LOK4     "     @@@ @  @ @@@@      @    @ @ @ @   @  @    " VAGN0
 #define LOK5     "     @ @ @  @ @  @  @   @    @ @ @ @   @  @    " VAGN1
 #define LOK6     "     @ @ @  @ @  @ @ @ @@    @@@@@@@   @  @    " VAGN2
