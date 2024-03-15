@@ -15,4 +15,4 @@ godis: sfml_matrix.o ../lib/graphics.o ../lib/bdf-font.o ../examples-api-use/$(A
 clean:
 	rm -f godis *.o
 
-.PHONY: all
+.PHONY: all godis
