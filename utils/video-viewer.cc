@@ -36,6 +36,7 @@ extern "C" {
 #  include <libswscale/swscale.h>
 }
 
+#include "../examples-api-use/common.h"
 #include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
@@ -160,6 +161,11 @@ SwsContext *CreateSWSContext(const AVCodecContext *codec_ctx,
 int main(int argc, char *argv[]) {
   RGBMatrix::Options matrix_options;
   rgb_matrix::RuntimeOptions runtime_opt;
+  matrix_options.hardware_mapping = HW_ID;
+  matrix_options.rows = LED_MATRIX_HEIGHT;
+  matrix_options.cols = LED_MATRIX_WIDTH;
+  matrix_options.chain_length = BOSS_WIDTH;
+
   // If started with 'sudo': make sure to drop privileges to same user
   // we started with, which is the most expected (and allows us to read
   // files as that user).

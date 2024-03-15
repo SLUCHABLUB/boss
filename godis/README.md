@@ -19,8 +19,12 @@ To compile and run a different program, be sure to run `make clean` before follo
 > ./godis
 ```
 
-%TODO: fancy choochoo.gif
+![](./choochoo.gif)
 
+### Videoviewer
+There is also a Make target for the video viewer. Simply run `make video` instead, then run `./video -F <path-to-video>`
 
 ## Dependencies
 This tool make use of the open multimedia library *[SFML](https://www.sfml-dev.org/index.php)*. It can be installed by running `sudo apt install libsfml-dev`
+
+To run the video-viewer program you will also need the following libraries: `avcodec`, `swscale` and `pkg-config`. They can be installed by running `sudo apt install libavcodec-dev libswscale-dev pkg-config`
