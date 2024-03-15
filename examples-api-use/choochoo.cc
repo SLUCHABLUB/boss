@@ -215,6 +215,7 @@ int main(int argc, char** argv)
 	}
 
 	auto* offscreen_canvas = rgb_mat->CreateFrameCanvas();
+    rgb_mat->CreateFrameCanvas();
 
 	int wheel_frame = 0;
 	int smoke_frame = 0;
@@ -242,7 +243,6 @@ int main(int argc, char** argv)
 		wheels = &iw[wheel_frame];
 
 		// draw train
-		offscreen_canvas->Fill(0, 0, 0);
 		offscreen_canvas = draw_lok(rgb_mat, offscreen_canvas, lok_static, *wheels, *smoke);
 
 		// increment pointers

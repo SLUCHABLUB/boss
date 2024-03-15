@@ -218,8 +218,8 @@ int main(int argc, char *argv[])
 
     float velocity = jump_velocity;
 
-    RGBMatrix *canvas = RGBMatrix::CreateFromOptions(matrix_options, runtime_opt);
-    if (canvas == NULL)
+    RGBMatrix *matrix = RGBMatrix::CreateFromOptions(matrix_options, runtime_opt);
+    if (matrix == NULL)
         return 1;
 
     signal(SIGTERM, InterruptHandler);
@@ -227,8 +227,9 @@ int main(int argc, char *argv[])
 
     printf("CTRL-C for exit.\n");
 
-    // Create a new canvas to be used with led_matrix_swap_on_vsync
-    FrameCanvas *offscreen_canvas = canvas->CreateFrameCanvas();
+    // Create canvases to be used with led_matrix_swap_on_vsync
+    FrameCanvas *offscreen_canvas = matrix->CreateFrameCanvas();
+    matrix->CreateFrameCanvas();
 
     // create thread to listen for key presses
     pthread_t thread;
@@ -383,7 +384,7 @@ int main(int argc, char *argv[])
         }
 
         // Swap the offscreen_canvas with canvas on vsync, avoids flickering
-        offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas);
+        offscreen_canvas = matrix->SwapOnVSync(offscreen_canvas);
 
         if (lost)
         {
@@ -399,7 +400,7 @@ int main(int argc, char *argv[])
     pthread_join(thread, NULL);
 
     // Finished. Shut down the RGB matrix.
-    delete canvas;
+    delete matrix;
 
     return 0;
 }
