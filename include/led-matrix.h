@@ -383,11 +383,13 @@ public:
   virtual void Clear();
   virtual void Fill(uint8_t red, uint8_t green, uint8_t blue);
 
+protected:
+  FrameCanvas(internal::Framebuffer *frame) : frame_(frame){}
+  virtual ~FrameCanvas();   // Any FrameCanvas is owned by RGBMatrix.
+
 private:
   friend class RGBMatrix;
 
-  FrameCanvas(internal::Framebuffer *frame) : frame_(frame){}
-  virtual ~FrameCanvas();   // Any FrameCanvas is owned by RGBMatrix.
   internal::Framebuffer *framebuffer() { return frame_; }
 
   internal::Framebuffer *const frame_;
