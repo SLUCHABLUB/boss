@@ -4,6 +4,7 @@
 // This code is public domain
 // (but note, that the led-matrix library this depends on is GPL v2)
 
+#include "common.h"
 #include "led-matrix.h"
 #include "graphics.h"
 
@@ -108,6 +109,10 @@ static Color ask_color(){
 int main(int argc, char *argv[]) {
   RGBMatrix::Options matrix_options;
   rgb_matrix::RuntimeOptions runtime_opt;
+	matrix_options.hardware_mapping = HW_ID;
+	matrix_options.rows = LED_MATRIX_HEIGHT;
+	matrix_options.cols = LED_MATRIX_WIDTH;
+	matrix_options.chain_length = BOSS_WIDTH;
   if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv,
                                          &matrix_options, &runtime_opt)) {
     return usage(argv[0]);
