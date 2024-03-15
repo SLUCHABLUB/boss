@@ -169,8 +169,21 @@ namespace rgb_matrix
 
 		void Clear();
 
+		void CanvasCheck()
+		{
+			if (active_canvas == nullptr)
+			{
+				CreateFrameCanvas();
+			}
+		}
+
+		
+
 	private:
 		friend class RGBMatrix; // Necessary evil
+
+		
+
 
 		// Brightness
 		uint8_t alpha{255};
@@ -182,8 +195,12 @@ namespace rgb_matrix
 		std::vector<SFMLCanvas*> canvases{};
 	};
 
+
+
+
 	RGBMatrix::Impl::Impl(const Options &opt) : options(opt)
 	{
+		//printf("here\n");
 		th = new SFMLThread(options.rows, options.cols * options.chain_length);
 	}
 
@@ -213,9 +230,9 @@ namespace rgb_matrix
 		return c;
 	}
 
-	FrameCanvas *RGBMatrix::Impl::SwapOnVSync(FrameCanvas *other, unsigned frame_fraction = 0)
+	FrameCanvas *RGBMatrix::Impl::SwapOnVSync(FrameCanvas *other, unsigned frame_fraction)
 	{
-		if (frame_fraction)
+		if (frame_fraction > 1)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds((unsigned)((1.f / (float)frame_fraction) * 1000)));
 		}
@@ -375,16 +392,19 @@ namespace rgb_matrix
 	// -- Implementation of RGBMatrix Canvas: delegation to ContentBuffer
 	int RGBMatrix::width() const
 	{
+		impl_->CanvasCheck();
 		return impl_->active_canvas->width();
 	}
 
 	int RGBMatrix::height() const
 	{
+		impl_->CanvasCheck();
 		return impl_->active_canvas->height();
 	}
 
 	void RGBMatrix::SetPixel(int x, int y, uint8_t red, uint8_t green, uint8_t blue)
 	{
+		impl_->CanvasCheck();
 		impl_->active_canvas->SetPixel(x, y, red, green, blue);
 	}
 
@@ -395,6 +415,7 @@ namespace rgb_matrix
 
 	void RGBMatrix::Fill(uint8_t red, uint8_t green, uint8_t blue)
 	{
+		impl_->CanvasCheck();
 		impl_->active_canvas->Fill(red, green, blue);
 	}
 

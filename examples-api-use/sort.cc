@@ -1,5 +1,6 @@
 #include "led-matrix.h"
 #include "graphics.h"
+#include "common.h"
 
 #include <string>
 #include <algorithm>
@@ -13,9 +14,11 @@
 
 using namespace rgb_matrix;
 
-int rows = 32;
-int cols = 192;
+int rows = BOSS_MATRIX_HEIGHT;
+int cols = BOSS_MATRIX_WIDTH;
 int step_delay = 1000;
+
+int framerate_fraction = 50;
 
 Color foreground_color;
 Color background_color;
@@ -43,18 +46,6 @@ static int usage(const char *progname)
     return 1;
 }
 
-static void SetPixelOnCanvas(Canvas *canvas, int r, int c)
-{
-    if (matrix[r][c])
-    {
-        canvas->SetPixel(c, r, 74, 46, 102);
-    }
-    else
-    {
-        canvas->SetPixel(c, r, 0, 0, 0);
-    }
-}
-
 void initMatrix()
 {
     for (int r = 0; r < rows; r++)
@@ -77,31 +68,7 @@ FrameCanvas *drawArray(int data[], int size, RGBMatrix *canvas, FrameCanvas *off
             offscreen_canvas->SetPixel(c, r, foreground_color.r, foreground_color.g, foreground_color.b);
         }
     }
-    return canvas->SwapOnVSync(offscreen_canvas);
-}
-
-void matrixify(int data[], int size)
-{
-    for (int c = 0; c < cols; c++)
-    {
-        for (int r = rows - 1; r >= rows - data[c]; r--) // changed r to start at ROWS-1, since matrix[ROWS] doesn't exist
-        {
-            matrix[r][c] = true;
-        }
-    }
-}
-
-FrameCanvas *drawMatrix(RGBMatrix *canvas, FrameCanvas *offscreen_canvas)
-{
-    for (int r = 0; r < rows; r++)
-    {
-        for (int c = 0; c < cols; c++)
-        {
-            SetPixelOnCanvas(offscreen_canvas, r, c);
-            matrix[r][c] = false;
-        }
-    }
-    return canvas->SwapOnVSync(offscreen_canvas);
+    return canvas->SwapOnVSync(offscreen_canvas, framerate_fraction);
 }
 
 static bool parseColor(Color *c, const char *str)
@@ -115,8 +82,6 @@ void swap(int &a, int &b)
     a = b;
     b = tmp;
 }
-
-// bitonicSort
 
 void insertionSort(int array[], int size, RGBMatrix *canvas, FrameCanvas *offscreen_canvas)
 {
@@ -139,11 +104,6 @@ void insertionSort(int array[], int size, RGBMatrix *canvas, FrameCanvas *offscr
         }
         array[j + 1] = key;
         offscreen_canvas = drawArray(array, size, canvas, offscreen_canvas);
-        //offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas);
-        //matrixify(array, size);
-        //drawMatrix(canvas, offscreen_canvas);
-
-        usleep(step_delay);
     }
 }
 
@@ -188,8 +148,6 @@ void cocktailSort(int array[], int n, RGBMatrix *canvas, FrameCanvas *offscreen_
         }
         offscreen_canvas = drawArray(array, n, canvas, offscreen_canvas);
 
-        usleep(step_delay);
-
         ++start;
     }
 }
@@ -198,10 +156,10 @@ int main(int argc, char *argv[])
 {
     //no idea why default options don't work
     RGBMatrix::Options matrix_options;
-    matrix_options.hardware_mapping = "adafruit-hat";
-    matrix_options.rows = 32;
-    matrix_options.cols = 64;
-    matrix_options.chain_length = 3;
+    matrix_options.hardware_mapping = HW_ID;
+    matrix_options.rows = LED_MATRIX_HEIGHT;
+    matrix_options.cols = LED_MATRIX_WIDTH;
+    matrix_options.chain_length = BOSS_WIDTH;
     rgb_matrix::RuntimeOptions runtime_opt;
     if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv,
                                            &matrix_options, &runtime_opt))
@@ -237,7 +195,8 @@ int main(int argc, char *argv[])
             }
             break;
         case 'd':
-            step_delay = std::max(1000, atoi(optarg) * 1000);
+            framerate_fraction = atoi(optarg);
+            //step_delay = std::max(1000, atoi(optarg) * 1000);
             break;
         default:
             return usage(argv[0]);
@@ -294,9 +253,8 @@ int main(int argc, char *argv[])
     {
         delete[] matrix[r];
     }
-    delete[] matrix;
 
-    canvas->Clear();
+    delete[] matrix;
     delete canvas;
 
     return 0;

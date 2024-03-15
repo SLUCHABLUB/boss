@@ -543,7 +543,6 @@ public:
 
   void Run() override {
     while (!interrupt_received) {
-
       updateValues();
 
       for (int x=0; x<width_; ++x) {
@@ -1065,8 +1064,10 @@ int main(int argc, char *argv[]) {
 
   // These are the defaults when no command-line flags are given.
   matrix_options.rows = 32;
-  matrix_options.chain_length = 1;
+  matrix_options.cols = 64;
+  matrix_options.chain_length = 3;
   matrix_options.parallel = 1;
+  matrix_options.hardware_mapping = "adafruit-hat";
 
   // First things first: extract the command line flags that contain
   // relevant matrix options.

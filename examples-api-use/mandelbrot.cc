@@ -1,5 +1,6 @@
 #include "led-matrix.h"
 #include "graphics.h"
+#include "common.h"
 
 #include <iostream>
 #include <string>
@@ -12,7 +13,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-using namespace std;
 using namespace rgb_matrix;
 
 //#define DEBUG
@@ -243,10 +243,10 @@ void draw_deep(FrameCanvas *offscreen_canvas, double x_start, double x_fin, doub
 int main(int argc, char **argv)
 {
 	RGBMatrix::Options matrix_options;
-	matrix_options.hardware_mapping = "adafruit-hat";
-	matrix_options.rows = 32;
-	matrix_options.cols = 64;
-	matrix_options.chain_length = 3;
+	matrix_options.hardware_mapping = HW_ID;
+	matrix_options.rows = LED_MATRIX_HEIGHT;
+	matrix_options.cols = LED_MATRIX_WIDTH;
+	matrix_options.chain_length = BOSS_WIDTH;
 	rgb_matrix::RuntimeOptions runtime_opt;
 	if (!rgb_matrix::ParseOptionsFromFlags(&argc, &argv,
 										   &matrix_options, &runtime_opt))
@@ -292,8 +292,8 @@ int main(int argc, char **argv)
 	}
 
 	RGBMatrix *canvas = RGBMatrix::CreateFromOptions(matrix_options, runtime_opt);
-	if (canvas == NULL)
-		return 1;
+	if (canvas == nullptr)
+		return -1;
 
 	signal(SIGTERM, InterruptHandler);
 	signal(SIGINT, InterruptHandler);
@@ -301,8 +301,8 @@ int main(int argc, char **argv)
 	// Create array new canvas to be used with led_matrix_swap_on_vsync
 	FrameCanvas *offscreen_canvas = canvas->CreateFrameCanvas();
 
-	width = 192;
-	height = 32;
+	width = BOSS_MATRIX_WIDTH;
+	height = BOSS_MATRIX_HEIGHT;
 
 	double factor = 1.0;
 
@@ -334,13 +334,13 @@ int main(int argc, char **argv)
 		{
 			draw_deep(offscreen_canvas, x_start, x_fin, y_start, y_fin);
 		}
-		offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas);
+		offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas, 30);
 		//sleep remaining time
 		#ifdef DEBUG
 		std::chrono::nanoseconds ms_diff = delay_until - std::chrono::steady_clock::now();
 		ms_log[i] = ms_diff;
 		#endif
-		std::this_thread::sleep_until(delay_until);
+		//std::this_thread::sleep_until(delay_until);
 		delay_until += increment;
 	}
 

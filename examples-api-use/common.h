@@ -7,5 +7,6 @@ constexpr int LED_MATRIX_HEIGHT = 32;
 constexpr int LED_MATRIX_WIDTH = 64;
 constexpr int BOSS_WIDTH = 3;
 constexpr int BOSS_MATRIX_WIDTH = BOSS_WIDTH * LED_MATRIX_WIDTH;
+constexpr int BOSS_MATRIX_HEIGHT = LED_MATRIX_HEIGHT;
 
 #endif
