@@ -2,22 +2,40 @@
 #define _CHOOCHOO_H_
 
 
-#define VAGN_E "                              "
-#define VAGN0  "        @@@@@    @@@@@        "
-#define VAGN1  "  @@   @     @  @     @   @@  "
-#define VAGN2  "  @ @@@@@@@@@@@@@@@@@@@@@@ @  "
-#define VAGN3  "  @@@ @                @ @@@  "
-#define VAGN4  "    @ @ @@ @ @   @ @ @ @ @    "
-#define VAGN5  "    @ @                @ @    "
-#define VAGN6  "    @ @   @    @@ @ @@ @ @    "
-#define VAGN7  "   @@ @                @ @@   "
-#define VAGN8  "  @ @ @                @ @ @  "
-#define VAGN9  "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-#define VAGN10 "@ @                        @ @"
-#define VAGN11 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ "
-#define VAGN12 "@@ @   @ @   @  @   @ @   @ @@"
-#define VAGN13 "   @   @@@   @  @   @@@   @   "
-#define VAGN14 "    @@@   @@@    @@@   @@@    "
+#define      VAGN_E "                              "
+
+#define LAST_VAGN0  "        @@@@@    @@@@@        "
+#define LAST_VAGN1  "  @@   @     @  @     @   @@  "
+#define LAST_VAGN2  "  @ @@@@@@@@@@@@@@@@@@@@@@ @  "
+#define LAST_VAGN3  "  @@@ @                @ @@@  "
+#define LAST_VAGN4  "    @ @ @@ @ @   @ @ @ @ @    "
+#define LAST_VAGN5  "    @ @                @ @    "
+#define LAST_VAGN6  "    @ @   @    @@ @ @@ @ @    "
+#define LAST_VAGN7  "   @@ @                @ @@   "
+#define LAST_VAGN8  "  @ @ @                @ @ @  "
+#define LAST_VAGN9  "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+#define LAST_VAGN10 "@ @                        @ @"
+#define LAST_VAGN11 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ "
+#define LAST_VAGN12 "@@ @   @ @   @  @   @ @   @ @@"
+#define LAST_VAGN13 "   @   @@@   @  @   @@@   @   "
+#define LAST_VAGN14 "    @@@   @@@    @@@   @@@    "
+
+#define MIDDLE_VAGN_E "                                "
+#define MIDDLE_VAGN0  "        @@@@@    @@@@@          "
+#define MIDDLE_VAGN1  "  @@   @     @  @     @   @@    "
+#define MIDDLE_VAGN2  "  @ @@@@@@@@@@@@@@@@@@@@@@ @    "
+#define MIDDLE_VAGN3  "  @@@ @                @ @@@    "
+#define MIDDLE_VAGN4  "    @ @ @@ @ @   @ @ @ @ @      "
+#define MIDDLE_VAGN5  "    @ @                @ @      "
+#define MIDDLE_VAGN6  "    @ @   @    @@ @ @@ @ @      "
+#define MIDDLE_VAGN7  "   @@ @                @ @@     "
+#define MIDDLE_VAGN8  "  @ @ @                @ @ @    "
+#define MIDDLE_VAGN9  "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  "
+#define MIDDLE_VAGN10 "@ @                        @ @@@"
+#define MIDDLE_VAGN11 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+#define MIDDLE_VAGN12 "@@ @   @ @   @  @   @ @   @ @@  "
+#define MIDDLE_VAGN13 "   @   @@@   @  @   @@@   @     "
+#define MIDDLE_VAGN14 "    @@@   @@@    @@@   @@@      "
 
 
 #define SMOKE0_0 "                   @@@@   @@@     @@      @     @       @        @"
@@ -31,45 +49,47 @@
 #define SMOKE3_1 "            @@@                                                   "
 #define SMOKE4_1 "                                                                  "
 
-#define LOK0     "         @@@@                                  " VAGN_E
-#define LOK1     "        @    @          @@@@@@     @@@@@@@@@@@@" VAGN_E
-#define LOK2     "         @  @           @    @    @           @" VAGN_E
-#define LOK3     "         @  @           @    @  @ @@@@@@@@@@@@ " VAGN_E
-#define LOK4     "     @@@ @  @ @@@@      @    @ @ @ @   @  @    " VAGN0
-#define LOK5     "     @ @ @  @ @  @  @   @    @ @ @ @   @  @    " VAGN1
-#define LOK6     "     @ @ @  @ @  @ @ @ @@    @@@@@@@   @  @    " VAGN2
-#define LOK7     "     @@@@@  @@@  @@@@@@@ @@@@ @    @   @  @    " VAGN3
-#define LOK8     "    @     @@ @ @@      @      @    @@@@@@@@    " VAGN4
-#define LOK9     "   @         @         @      @    @      @    " VAGN5
-#define LOK10    "   @         @         @      @    @      @    " VAGN6
-#define LOK11    "   @         @                     @      @    " VAGN7
-#define LOK12    "    @        @     @@@     @@@     @@@    @    " VAGN8
+#define LOK_EMPTY "                                               "
 
-#define LOK13_0  "     @@@@@@@@@    @   @   @   @   @   @@@@@@@  " VAGN9
-#define LOK14_0  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" VAGN10
-#define LOK15_0  " @   @@@@@@@@@@  @@@@@@@@@@@@@@@@@@    @  @@@@@" VAGN11
-#define LOK16_0  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " VAGN12
-#define LOK17_0  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " VAGN13
+#define LOK0     "         @@@@                                  " 
+#define LOK1     "        @    @          @@@@@@     @@@@@@@@@@@@" 
+#define LOK2     "         @  @           @    @    @           @" 
+#define LOK3     "         @  @           @    @  @ @@@@@@@@@@@@ " 
+#define LOK4     "     @@@ @  @ @@@@      @    @ @ @ @   @  @    " 
+#define LOK5     "     @ @ @  @ @  @  @   @    @ @ @ @   @  @    " 
+#define LOK6     "     @ @ @  @ @  @ @ @ @@    @@@@@@@   @  @    " 
+#define LOK7     "     @@@@@  @@@  @@@@@@@ @@@@ @    @   @  @    " 
+#define LOK8     "    @     @@ @ @@      @      @    @@@@@@@@    " 
+#define LOK9     "   @         @         @      @    @      @    " 
+#define LOK10    "   @         @         @      @    @      @    " 
+#define LOK11    "   @         @                     @      @    " 
+#define LOK12    "    @        @     @@@     @@@     @@@    @    " 
 
-#define LOK13_1  "     @@@@@@@@@    @   @   @   @   @   @@@@@@@  " VAGN9
-#define LOK14_1  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" VAGN10
-#define LOK15_1  " @   @@@@@@@@@@  @     @ @     @ @     @  @@@@@" VAGN11
-#define LOK16_1  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " VAGN12
-#define LOK17_1  "@@@@@@ @  @@@  @  @ @@@@@@@@@@@@@@@@@ @        " VAGN13
+#define LOK13_0  "     @@@@@@@@@    @   @   @   @   @   @@@@@@@  " 
+#define LOK14_0  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" 
+#define LOK15_0  " @   @@@@@@@@@@  @@@@@@@@@@@@@@@@@@    @  @@@@@" 
+#define LOK16_0  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " 
+#define LOK17_0  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " 
 
-#define LOK13_2  "     @@@@@@@@@    @   @   @   @   @   @@@@@@@  " VAGN9
-#define LOK14_2  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" VAGN10
-#define LOK15_2  " @   @@@@@@@@@@  @    @@@@@@@@@@@@@@@@@@  @@@@@" VAGN11
-#define LOK16_2  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " VAGN12
-#define LOK17_2  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " VAGN13
+#define LOK13_1  "     @@@@@@@@@    @   @   @   @   @   @@@@@@@  " 
+#define LOK14_1  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" 
+#define LOK15_1  " @   @@@@@@@@@@  @     @ @     @ @     @  @@@@@" 
+#define LOK16_1  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " 
+#define LOK17_1  "@@@@@@ @  @@@  @  @ @@@@@@@@@@@@@@@@@ @        " 
 
-#define LOK13_3  "     @@@@@@@@@    @ @@@@@@@@@@@@@@@@@ @@@@@@@  " VAGN9
-#define LOK14_3  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" VAGN10
-#define LOK15_3  " @   @@@@@@@@@@  @     @ @     @ @     @  @@@@@" VAGN11
-#define LOK16_3  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " VAGN12
-#define LOK17_3  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " VAGN13
+#define LOK13_2  "     @@@@@@@@@    @   @   @   @   @   @@@@@@@  " 
+#define LOK14_2  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" 
+#define LOK15_2  " @   @@@@@@@@@@  @    @@@@@@@@@@@@@@@@@@  @@@@@" 
+#define LOK16_2  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " 
+#define LOK17_2  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " 
 
-#define LOK18    "        @@   @@    @@@     @@@     @@@         " VAGN14
+#define LOK13_3  "     @@@@@@@@@    @ @@@@@@@@@@@@@@@@@ @@@@@@@  " 
+#define LOK14_3  "  @@@    @   @@@@@     @ @     @ @     @  @ @@@" 
+#define LOK15_3  " @   @@@@@@@@@@  @     @ @     @ @     @  @@@@@" 
+#define LOK16_3  "@    @ @  @ @  @ @     @ @     @ @     @@@ @@  " 
+#define LOK17_3  "@@@@@@ @  @@@  @  @   @   @   @   @   @        " 
+
+#define LOK18    "        @@   @@    @@@     @@@     @@@         " 
 
 
 #endif

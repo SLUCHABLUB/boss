@@ -6,7 +6,9 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <string>
 
+constexpr int FRAME_RATE = 25;
 
 constexpr int ROWS = LED_MATRIX_HEIGHT;
 constexpr int COLS = BOSS_MATRIX_WIDTH * 2;
@@ -21,39 +23,111 @@ constexpr int WHEEL_OFFSET = 1;
 constexpr int WHEEL_HEIGHT = 5;
 
 constexpr int ANIM_LENGTH = COLS;
+constexpr int ANIM_CART_OFFSET = 35;
+constexpr int DEFAULT_MAX_NUM_CARTS = 3;
 
-int get_matrix_value(char c)
+static inline int get_matrix_value(char c)
 {
 	return c == '@' ? 1 : 0;
 }
 
-int** calc_lok_matrix()
+int** calc_lok_matrix(int num_carts)
 {
 	int** matrix = new int*[ROWS];
 	for (size_t i = 0; i < ROWS; i++)
 	{
-		matrix[i] = new int[COLS];
-		memset(matrix[i], 0, sizeof(int) * COLS);
+		matrix[i] = new int[COLS * num_carts];
+		memset(matrix[i], 0, sizeof(int) * COLS * num_carts);
 	}
 
-	std::vector<const char*> il {
-			LOK18,
-			"17", "16", "15", "14", "13", // padding for wheel section
-			LOK12, LOK11, LOK10, LOK9,
-			LOK8, LOK7, LOK6, LOK5,
-			LOK4, LOK3, LOK2, LOK1, LOK0};
+	std::vector<const char *> lok{
+		LOK18,
+		// padding for wheel section
+		LOK_EMPTY,
+		LOK_EMPTY,
+		LOK_EMPTY,
+		LOK_EMPTY,
+		LOK_EMPTY,
+		// end padding
+		LOK12,
+		LOK11,
+		LOK10,
+		LOK9,
+		LOK8,
+		LOK7,
+		LOK6,
+		LOK5,
+		LOK4,
+		LOK3,
+		LOK2,
+		LOK1,
+		LOK0
+	};
 
-	int train_len = strlen(LOK0);
+	std::vector<const char *> m_vagn{
+		MIDDLE_VAGN14,
+		MIDDLE_VAGN13,
+		MIDDLE_VAGN12,
+		MIDDLE_VAGN11,
+		MIDDLE_VAGN10,
+		MIDDLE_VAGN9,
+		MIDDLE_VAGN8,
+		MIDDLE_VAGN7,
+		MIDDLE_VAGN6,
+		MIDDLE_VAGN5,
+		MIDDLE_VAGN4,
+		MIDDLE_VAGN3,
+		MIDDLE_VAGN2,
+		MIDDLE_VAGN1,
+		MIDDLE_VAGN0,
+		VAGN_E,
+		VAGN_E,
+		VAGN_E,
+		VAGN_E,
+	};
+
+	std::vector<const char *> l_vagn{
+		LAST_VAGN14,
+		LAST_VAGN13,
+		LAST_VAGN12,
+		LAST_VAGN11,
+		LAST_VAGN10,
+		LAST_VAGN9,
+		LAST_VAGN8,
+		LAST_VAGN7,
+		LAST_VAGN6,
+		LAST_VAGN5,
+		LAST_VAGN4,
+		LAST_VAGN3,
+		LAST_VAGN2,
+		LAST_VAGN1,
+		LAST_VAGN0,
+		VAGN_E,
+		VAGN_E,
+		VAGN_E,
+		VAGN_E,
+	};
+
+	std::vector<std::string> lok_w_c{};
+
+	for (size_t i = 0; i < lok.size(); i++)
+	{
+		std::string s{lok[i]};
+		for (int j = 0; j < num_carts - 1; j++)
+		{
+			s += m_vagn[i];
+		}
+		s += l_vagn[i];
+		lok_w_c.push_back(s);
+	}
+	
+	int train_len = lok_w_c[0].size();
 
 	for (int i = 0; i < TRAIN_HEIGHT; i++)
 	{
 		for (int j = 0; j < train_len; j++)
 		{
-			matrix[ROWS - i - 1][TRAIN_OFFSET + j] = get_matrix_value(il[i][j]);
-		}
-		if (i == 0)
-		{
-			i += WHEEL_HEIGHT; // skip wheel section
+			matrix[ROWS - i - 1][TRAIN_OFFSET + j] = get_matrix_value(lok_w_c[i][j]);
 		}
 	}
 
@@ -62,7 +136,7 @@ int** calc_lok_matrix()
 
 const char* get_wheel_17(int frame)
 {
-	return std::vector<const char*>{LOK17_0, LOK17_1, LOK17_2, LOK17_3}[frame];
+	return std::vector<const char *>{LOK17_0, LOK17_1, LOK17_2, LOK17_3}[frame];
 }
 
 const char* get_wheel_16(int frame)
@@ -85,13 +159,13 @@ const char* get_wheel_13(int frame)
 	return std::vector<const char*>{LOK13_0, LOK13_1, LOK13_2, LOK13_3}[frame];
 }
 
-int** calc_wheel_matrix(int frame)
+int **calc_wheel_matrix(int frame, int num_carts)
 {
 	int** matrix = new int*[ROWS];
 	for (size_t i = 0; i < ROWS; i++)
 	{
-		matrix[i] = new int[COLS];
-		memset(matrix[i], 0, sizeof(int) * COLS);
+		matrix[i] = new int[COLS * num_carts];
+		memset(matrix[i], 0, sizeof(int) * COLS * num_carts);
 	}
 
 	std::vector<const char*> il {
@@ -140,13 +214,13 @@ const char* get_smoke_4(int frame)
 	return std::vector<const char*>{SMOKE4_0, SMOKE4_1}[frame];
 }
 
-int** calc_smoke_matrix(int frame)
+int** calc_smoke_matrix(int frame, int num_carts)
 {
 	int** matrix = new int*[ROWS];
 	for (size_t i = 0; i < ROWS; i++)
 	{
-		matrix[i] = new int[COLS];
-		memset(matrix[i], 0, sizeof(int) * COLS);
+		matrix[i] = new int[COLS * num_carts];
+		memset(matrix[i], 0, sizeof(int) * COLS * num_carts);
 	}
 
 	std::vector<const char*> il {
@@ -189,12 +263,14 @@ rgb_matrix::FrameCanvas* draw_lok(rgb_matrix::RGBMatrix* rgb_mat, rgb_matrix::Fr
 {
 	offscreen_canvas->Clear();
 	offscreen_canvas = draw_frame(rgb_mat, offscreen_canvas, lok_static, wheels, smoke);
-	return rgb_mat->SwapOnVSync(offscreen_canvas, 25);
+	return rgb_mat->SwapOnVSync(offscreen_canvas, FRAME_RATE);
 }
 
 
 int main(int argc, char** argv)
 {
+	srand(time(nullptr));
+
     rgb_matrix::RGBMatrix::Options matrix_options;
 	rgb_matrix::RuntimeOptions runtime_opt;
 	matrix_options.hardware_mapping = HW_ID;
@@ -206,6 +282,21 @@ int main(int argc, char** argv)
 	{
 		//return usage(argv[0]);
 		return -1;
+	}
+
+	int num_carts = rand() % DEFAULT_MAX_NUM_CARTS + 1;
+
+	int opt;
+	while ((opt = getopt(argc, argv, "c:")) != -1)
+	{
+		switch (opt)
+		{
+		case 'c':
+			num_carts = atoi(optarg);
+			break;
+		default:
+			return -1;
+		}
 	}
 
 	auto* rgb_mat = rgb_matrix::RGBMatrix::CreateFromOptions(matrix_options, runtime_opt);
@@ -220,26 +311,32 @@ int main(int argc, char** argv)
 	int wheel_frame = 0;
 	int smoke_frame = 0;
 
-	auto *lok_static = calc_lok_matrix();
-	auto *smoke_0 = calc_smoke_matrix(0);
-	auto *smoke_1 = calc_smoke_matrix(1);
-	auto *wheels_0 = calc_wheel_matrix(0);
-	auto *wheels_1 = calc_wheel_matrix(1);
-	auto *wheels_2 = calc_wheel_matrix(2);
-	auto *wheels_3 = calc_wheel_matrix(3);
+	auto *lok_static = calc_lok_matrix(num_carts);
+	auto *smoke_0    = calc_smoke_matrix(0, num_carts);
+	auto *smoke_1    = calc_smoke_matrix(1, num_carts);
+	auto *wheels_0   = calc_wheel_matrix(0, num_carts);
+	auto *wheels_1   = calc_wheel_matrix(1, num_carts);
+	auto *wheels_2   = calc_wheel_matrix(2, num_carts);
+	auto *wheels_3   = calc_wheel_matrix(3, num_carts);
 
 	auto* smoke = &smoke_0;
 	auto* wheels = &wheels_0;
 
-	std::vector<int**> iw {wheels_0, wheels_1, wheels_2, wheels_3};
+	std::vector<int**> iw {
+		wheels_0,
+		wheels_1,
+		wheels_2,
+		wheels_3
+	};
 
-	for (size_t i = 0; i < ANIM_LENGTH - 70; i++) // magic offset
+	int anim_len = ANIM_LENGTH - (DEFAULT_MAX_NUM_CARTS - num_carts) * ANIM_CART_OFFSET;
+	for (int i = 0; i < anim_len; i++)
 	{
 		// animate
 		smoke_frame = i % 6 > 2 ? 1 : 0; // animate smoke every third frame
 		wheel_frame = i % 4;
 
-		smoke = smoke_frame == 1 ? &smoke_1 : &smoke_0;
+		smoke = smoke_frame ? &smoke_1 : &smoke_0;
 		wheels = &iw[wheel_frame];
 
 		// draw train
@@ -248,15 +345,14 @@ int main(int argc, char** argv)
 		// increment pointers
 		for (size_t j = 0; j < ROWS; j++)
 		{
-			lok_static[j]++;
-			wheels_0[j]++;
-			wheels_1[j]++;
-			wheels_2[j]++;
-			wheels_3[j]++;
-			smoke_0[j]++;
-			smoke_1[j]++;
+			++lok_static[j];
+			++wheels_0[j];
+			++wheels_1[j];
+			++wheels_2[j];
+			++wheels_3[j];
+			++smoke_0[j];
+			++smoke_1[j];
 		}
-		//usleep(1000 * 40); // Magic number go brrr
 	}
 
 	delete rgb_mat;
