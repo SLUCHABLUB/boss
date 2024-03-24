@@ -49,8 +49,8 @@ int **calc_lok_matrix(int num_carts)
     int **matrix = new int *[ROWS];
     for (size_t i = 0; i < ROWS; i++)
     {
-        matrix[i] = new int[COLS * num_carts];
-        memset(matrix[i], 0, sizeof(int) * COLS * num_carts);
+        matrix[i] = new int[COLS * num_carts * 2];
+        memset(matrix[i], 0, sizeof(int) * COLS * num_carts * 2);
     }
 
     std::vector<const char *> lok{
@@ -176,8 +176,8 @@ int **calc_wheel_matrix(int frame, int num_carts)
     int **matrix = new int *[ROWS];
     for (size_t i = 0; i < ROWS; i++)
     {
-        matrix[i] = new int[COLS * num_carts];
-        memset(matrix[i], 0, sizeof(int) * COLS * num_carts);
+        matrix[i] = new int[COLS * num_carts * 2];
+        memset(matrix[i], 0, sizeof(int) * COLS * num_carts * 2);
     }
 
     std::vector<const char *> il{
@@ -230,8 +230,8 @@ int **calc_smoke_matrix(int frame, int num_carts)
     int **matrix = new int *[ROWS];
     for (size_t i = 0; i < ROWS; i++)
     {
-        matrix[i] = new int[COLS * num_carts];
-        memset(matrix[i], 0, sizeof(int) * COLS * num_carts);
+        matrix[i] = new int[COLS * num_carts * 2];
+        memset(matrix[i], 0, sizeof(int) * COLS * num_carts * 2);
     }
 
     std::vector<const char *> il{

@@ -334,13 +334,13 @@ int main(int argc, char **argv)
 		{
 			draw_deep(offscreen_canvas, x_start, x_fin, y_start, y_fin);
 		}
-		offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas, 30);
+		offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas);
 		//sleep remaining time
 		#ifdef DEBUG
 		std::chrono::nanoseconds ms_diff = delay_until - std::chrono::steady_clock::now();
 		ms_log[i] = ms_diff;
 		#endif
-		//std::this_thread::sleep_until(delay_until);
+		std::this_thread::sleep_until(delay_until);
 		delay_until += increment;
 	}
 

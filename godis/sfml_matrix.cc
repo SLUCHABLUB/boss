@@ -29,7 +29,7 @@ namespace rgb_matrix
                     sf::CircleShape c(LED_RADIUS_PIXELS, 20);
                     led_matrix[i].push_back(c);
                     int offset = LED_RADIUS_PIXELS + 20;
-                    led_matrix[i][j].setPosition(offset + i * (LED_RADIUS_PIXELS + 1) * 2, offset + j * (LED_RADIUS_PIXELS + 1) * 2 + 1);
+                    led_matrix[i][j].setPosition(50 + offset + i * (LED_RADIUS_PIXELS + 1) * 2, 240 + offset + j * (LED_RADIUS_PIXELS + 1) * 2 + 1);
                     led_matrix[i][j].setOutlineColor(sf::Color(32, 32, 32));
                     led_matrix[i][j].setOutlineThickness(1);
                 }
@@ -75,12 +75,22 @@ namespace rgb_matrix
         int h;
         uint8_t alpha{255};
         std::vector<std::vector<sf::CircleShape>> led_matrix{};
+
     };
 
     class SFMLThread
     {
     public:
-        SFMLThread(int w, int h) : th(&SFMLThread::run, this), next_canvas(nullptr) {}
+        SFMLThread(int w, int h) : th(&SFMLThread::run, this), next_canvas(nullptr)
+        {
+            tex.loadFromFile("godis.jpg");
+            s.setTexture(tex, true);
+            s.setPosition({1, -130});
+            s.setScale(0.32, 0.32);
+            r.setFillColor({60,60,60});
+            r.setPosition(45, 257);
+            r.setSize({1200, 200});
+        }
 
         ~SFMLThread()
         {
@@ -114,6 +124,8 @@ namespace rgb_matrix
 
                 window.clear();
 
+                window.draw(s);
+                window.draw(r);
                 sync.lock();
                 for (int i = 0; i < current_canvas->width(); i++)
                 {
@@ -156,6 +168,10 @@ namespace rgb_matrix
         std::mutex sync;
         SFMLCanvas *current_canvas;
         SFMLCanvas *next_canvas;
+
+        sf::Texture tex;
+        sf::Sprite s;
+        sf::RectangleShape r;
     };
 
     class RGBMatrix::Impl
