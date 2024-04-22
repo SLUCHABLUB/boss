@@ -273,7 +273,7 @@ rgb_matrix::FrameCanvas *draw_lok(rgb_matrix::RGBMatrix *rgb_mat, rgb_matrix::Fr
 {
     offscreen_canvas->Clear();
     offscreen_canvas = draw_frame(rgb_mat, offscreen_canvas, lok_static, wheels, smoke, color);
-    return rgb_mat->SwapOnVSync(offscreen_canvas, FRAME_RATE);
+    return rgb_mat->SwapOnVSync(offscreen_canvas);
 }
 
 static bool parseColor(rgb_matrix::Color *c, const char *str)

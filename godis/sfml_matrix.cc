@@ -341,7 +341,7 @@ namespace rgb_matrix
     FrameCanvas *RGBMatrix::SwapOnVSync(FrameCanvas *other,
                                         unsigned framerate_fraction)
     {
-        return impl_->SwapOnVSync(other, framerate_fraction);
+        return impl_->SwapOnVSync(other, 25); // hell'a ugly, FIXME (implement sw-support for --led-gpio-slowdown flag)
     }
     bool RGBMatrix::ApplyPixelMapper(const PixelMapper *mapper)
     {
