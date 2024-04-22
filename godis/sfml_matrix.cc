@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <SFML/Graphics.hpp>
+#include <cstring>
 
 #define SFML_WINDOW_WIDTH 1280
 #define SFML_WINDOW_HEIGHT 720
@@ -75,19 +76,18 @@ namespace rgb_matrix
         int h;
         uint8_t alpha{255};
         std::vector<std::vector<sf::CircleShape>> led_matrix{};
-
     };
 
     class SFMLThread
     {
     public:
-        SFMLThread(int w, int h) : th(&SFMLThread::run, this), next_canvas(nullptr)
+        SFMLThread(int w, int h, const RuntimeOptions& rt_opt) : th(&SFMLThread::run, this), next_canvas(nullptr), rt_options(rt_opt)
         {
             tex.loadFromFile("godis.jpg");
             s.setTexture(tex, true);
             s.setPosition({1, -130});
             s.setScale(0.32, 0.32);
-            r.setFillColor({60,60,60});
+            r.setFillColor({60, 60, 60});
             r.setPosition(45, 257);
             r.setSize({1200, 200});
         }
@@ -172,12 +172,15 @@ namespace rgb_matrix
         sf::Texture tex;
         sf::Sprite s;
         sf::RectangleShape r;
+
+        RuntimeOptions rt_options;
     };
 
     class RGBMatrix::Impl
     {
     public:
         Impl(const Options &options);
+        Impl(const Options &options, const RuntimeOptions &rt_options);
         ~Impl();
 
         FrameCanvas *CreateFrameCanvas();
@@ -203,6 +206,7 @@ namespace rgb_matrix
         uint8_t alpha{255};
 
         Options options;
+        RuntimeOptions rt_options;
 
         SFMLThread *th;
         SFMLCanvas *active_canvas;
@@ -213,7 +217,12 @@ namespace rgb_matrix
 
     RGBMatrix::Impl::Impl(const Options &opt) : options(opt)
     {
-        th = new SFMLThread(options.rows, options.cols * options.chain_length);
+        th = new SFMLThread(options.rows, options.cols * options.chain_length, {});
+    }
+
+    RGBMatrix::Impl::Impl(const Options &opt, const RuntimeOptions &rt_opt) : options(opt), rt_options(rt_opt)
+    {
+        th = new SFMLThread(options.rows, options.cols * options.chain_length, rt_opt);
     }
 
     void RGBMatrix::Impl::Clear()
@@ -244,9 +253,16 @@ namespace rgb_matrix
 
     FrameCanvas *RGBMatrix::Impl::SwapOnVSync(FrameCanvas *other, unsigned frame_fraction)
     {
-        if (frame_fraction > 1)
+        if (frame_fraction > 1) // Shouldn't really be used tbh
         {
             const auto sleep_delay_ms = std::chrono::milliseconds((unsigned)((1.f / (float)frame_fraction) * 1000));
+            std::this_thread::sleep_until(last_vsync_swap + sleep_delay_ms);
+            last_vsync_swap = std::chrono::steady_clock::now();
+        }
+        else if (rt_options.gpio_slowdown > 0)
+        {
+            // Crude estimation of the slowdown-gpio flag for boss hw
+            const auto sleep_delay_ms = std::chrono::milliseconds((unsigned)(((float)rt_options.gpio_slowdown) * 2.5f));
             std::this_thread::sleep_until(last_vsync_swap + sleep_delay_ms);
             last_vsync_swap = std::chrono::steady_clock::now();
         }
@@ -279,11 +295,11 @@ namespace rgb_matrix
         //   }
 
         //   // For the Pi4, we might need 2, maybe up to 4. Let's open up to 5.
-        //   if (runtime_options.gpio_slowdown < 0 || runtime_options.gpio_slowdown > 1000) {
-        //     fprintf(stderr, "--led-slowdown-gpio=%d is outside usable range\n",
-        //             runtime_options.gpio_slowdown);
-        //     return NULL;
-        //   }
+          if (runtime_options.gpio_slowdown < 0 || runtime_options.gpio_slowdown > 1000) {
+            fprintf(stderr, "--led-slowdown-gpio=%d is outside usable range\n",
+                    runtime_options.gpio_slowdown);
+            return NULL;
+          }
 
         //   static GPIO io;  // This static var is a little bit icky.
         //   if (runtime_options.do_gpio_init
@@ -297,7 +313,7 @@ namespace rgb_matrix
         //     perror("Failed to become daemon");
         //   }
 
-        RGBMatrix::Impl *result = new RGBMatrix::Impl(options);
+        RGBMatrix::Impl *result = new RGBMatrix::Impl(options, runtime_options);
         // Allowing daemon also means we are allowed to start the thread now.
         // const bool allow_daemon = !(runtime_options.daemon < 0);
         // if (runtime_options.do_gpio_init)
@@ -341,7 +357,7 @@ namespace rgb_matrix
     FrameCanvas *RGBMatrix::SwapOnVSync(FrameCanvas *other,
                                         unsigned framerate_fraction)
     {
-        return impl_->SwapOnVSync(other, 25); // hell'a ugly, FIXME (implement sw-support for --led-gpio-slowdown flag)
+        return impl_->SwapOnVSync(other, framerate_fraction);
     }
     bool RGBMatrix::ApplyPixelMapper(const PixelMapper *mapper)
     {
@@ -524,147 +540,240 @@ namespace rgb_matrix
         // frame_->CopyFrom(other.frame_);
     }
 
+    typedef char **argv_iterator;
+
+#define OPTION_PREFIX "--led-"
+#define OPTION_PREFIX_LEN strlen(OPTION_PREFIX)
+
+    static bool ConsumeBoolFlag(const char *flag_name, const argv_iterator &pos, bool *result_value)
+    {
+        const char *option = *pos;
+        if (strncmp(option, OPTION_PREFIX, OPTION_PREFIX_LEN) != 0)
+            return false;
+        option += OPTION_PREFIX_LEN;
+        bool value_to_set = true;
+        if (strncmp(option, "no-", 3) == 0)
+        {
+            value_to_set = false;
+            option += 3;
+        }
+        if (strcmp(option, flag_name) != 0)
+            return false; // not consumed.
+        *result_value = value_to_set;
+        return true;
+    }
+
+    static bool ConsumeIntFlag(const char *flag_name,
+                               argv_iterator &pos, const argv_iterator end,
+                               int *result_value, int *error)
+    {
+        const char *option = *pos;
+        if (strncmp(option, OPTION_PREFIX, OPTION_PREFIX_LEN) != 0)
+            return false;
+        option += OPTION_PREFIX_LEN;
+        const size_t flag_len = strlen(flag_name);
+        if (strncmp(option, flag_name, flag_len) != 0)
+            return false; // not consumed.
+        const char *value;
+        if (option[flag_len] == '=') // --option=42  # value in same arg
+            value = option + flag_len + 1;
+        else if (pos + 1 < end)
+        { // --option 42  # value in next arg
+            value = *(++pos);
+        }
+        else
+        {
+            fprintf(stderr, "Parameter expected after %s%s\n",
+                    OPTION_PREFIX, flag_name);
+            ++*error;
+            return true; // consumed, but error.
+        }
+        char *end_value = NULL;
+        int val = strtol(value, &end_value, 10);
+        if (!*value || *end_value)
+        {
+            fprintf(stderr, "Couldn't parse parameter %s%s=%s "
+                            "(Expected decimal number but '%s' looks funny)\n",
+                    OPTION_PREFIX, flag_name, value, end_value);
+            ++*error;
+            return true; // consumed, but error
+        }
+        *result_value = val;
+        return true; // consumed.
+    }
+
+    // The resulting value is allocated.
+    static bool ConsumeStringFlag(const char *flag_name,
+                                  argv_iterator &pos, const argv_iterator end,
+                                  const char **result_value, int *error)
+    {
+        const char *option = *pos;
+        if (strncmp(option, OPTION_PREFIX, OPTION_PREFIX_LEN) != 0)
+            return false;
+        option += OPTION_PREFIX_LEN;
+        const size_t flag_len = strlen(flag_name);
+        if (strncmp(option, flag_name, flag_len) != 0)
+            return false; // not consumed.
+        const char *value;
+        if (option[flag_len] == '=') // --option=hello  # value in same arg
+            value = option + flag_len + 1;
+        else if (pos + 1 < end)
+        { // --option hello  # value in next arg
+            value = *(++pos);
+        }
+        else
+        {
+            fprintf(stderr, "Parameter expected after %s%s\n",
+                    OPTION_PREFIX, flag_name);
+            ++*error;
+            *result_value = NULL;
+            return true; // consumed, but error.
+        }
+        *result_value = strdup(value); // This will leak, but no big deal.
+        return true;
+    }
+
     static bool FlagInit(int &argc, char **&argv,
                          RGBMatrix::Options *mopts,
                          RuntimeOptions *ropts,
                          bool remove_consumed_options)
     {
-        // argv_iterator it = &argv[0];
-        // argv_iterator end = it + argc;
+        argv_iterator it = &argv[0];
+        argv_iterator end = it + argc;
 
-        // std::vector<char *> unused_options;
-        // unused_options.push_back(*it++); // Not interested in program name
+        std::vector<char *> unused_options;
+        unused_options.push_back(*it++); // Not interested in program name
 
-        // bool bool_scratch;
-        // int err = 0;
-        // bool posix_end_option_seen = false; // end of options '--'
-        // for (/**/; it < end; ++it)
-        // {
-        // 	posix_end_option_seen |= (strcmp(*it, "--") == 0);
-        // 	if (!posix_end_option_seen)
-        // 	{
-        // 		if (ConsumeStringFlag("gpio-mapping", it, end,
-        // 							  &mopts->hardware_mapping, &err))
-        // 			continue;
-        // 		if (ConsumeStringFlag("rgb-sequence", it, end,
-        // 							  &mopts->led_rgb_sequence, &err))
-        // 			continue;
-        // 		if (ConsumeStringFlag("pixel-mapper", it, end,
-        // 							  &mopts->pixel_mapper_config, &err))
-        // 			continue;
-        // 		if (ConsumeStringFlag("panel-type", it, end,
-        // 							  &mopts->panel_type, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("rows", it, end, &mopts->rows, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("cols", it, end, &mopts->cols, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("chain", it, end, &mopts->chain_length, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("parallel", it, end, &mopts->parallel, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("multiplexing", it, end, &mopts->multiplexing, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("brightness", it, end, &mopts->brightness, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("scan-mode", it, end, &mopts->scan_mode, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("pwm-bits", it, end, &mopts->pwm_bits, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("pwm-lsb-nanoseconds", it, end,
-        // 						   &mopts->pwm_lsb_nanoseconds, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("pwm-dither-bits", it, end,
-        // 						   &mopts->pwm_dither_bits, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("row-addr-type", it, end,
-        // 						   &mopts->row_address_type, &err))
-        // 			continue;
-        // 		if (ConsumeIntFlag("limit-refresh", it, end,
-        // 						   &mopts->limit_refresh_rate_hz, &err))
-        // 			continue;
-        // 		if (ConsumeBoolFlag("show-refresh", it, &mopts->show_refresh_rate))
-        // 			continue;
-        // 		if (ConsumeBoolFlag("inverse", it, &mopts->inverse_colors))
-        // 			continue;
-        // 		// We don't have a swap_green_blue option anymore, but we simulate the
-        // 		// flag for a while.
-        // 		bool swap_green_blue;
-        // 		if (ConsumeBoolFlag("swap-green-blue", it, &swap_green_blue))
-        // 		{
-        // 			if (strlen(mopts->led_rgb_sequence) == 3)
-        // 			{
-        // 				char *new_sequence = strdup(mopts->led_rgb_sequence);
-        // 				new_sequence[0] = mopts->led_rgb_sequence[0];
-        // 				new_sequence[1] = mopts->led_rgb_sequence[2];
-        // 				new_sequence[2] = mopts->led_rgb_sequence[1];
-        // 				mopts->led_rgb_sequence = new_sequence; // leaking. Ignore.
-        // 			}
-        // 			continue;
-        // 		}
-        // 		bool allow_hardware_pulsing = !mopts->disable_hardware_pulsing;
-        // 		if (ConsumeBoolFlag("hardware-pulse", it, &allow_hardware_pulsing))
-        // 		{
-        // 			mopts->disable_hardware_pulsing = !allow_hardware_pulsing;
-        // 			continue;
-        // 		}
+        bool bool_scratch;
+        int err = 0;
+        bool posix_end_option_seen = false; // end of options '--'
+        for (/**/; it < end; ++it)
+        {
+            posix_end_option_seen |= (strcmp(*it, "--") == 0);
+            if (!posix_end_option_seen)
+            {
+                if (ConsumeStringFlag("gpio-mapping", it, end,
+                                      &mopts->hardware_mapping, &err))
+                    continue;
+                if (ConsumeStringFlag("rgb-sequence", it, end,
+                                      &mopts->led_rgb_sequence, &err))
+                    continue;
+                if (ConsumeStringFlag("pixel-mapper", it, end,
+                                      &mopts->pixel_mapper_config, &err))
+                    continue;
+                if (ConsumeStringFlag("panel-type", it, end,
+                                      &mopts->panel_type, &err))
+                    continue;
+                if (ConsumeIntFlag("rows", it, end, &mopts->rows, &err))
+                    continue;
+                if (ConsumeIntFlag("cols", it, end, &mopts->cols, &err))
+                    continue;
+                if (ConsumeIntFlag("chain", it, end, &mopts->chain_length, &err))
+                    continue;
+                if (ConsumeIntFlag("parallel", it, end, &mopts->parallel, &err))
+                    continue;
+                if (ConsumeIntFlag("multiplexing", it, end, &mopts->multiplexing, &err))
+                    continue;
+                if (ConsumeIntFlag("brightness", it, end, &mopts->brightness, &err))
+                    continue;
+                if (ConsumeIntFlag("scan-mode", it, end, &mopts->scan_mode, &err))
+                    continue;
+                if (ConsumeIntFlag("pwm-bits", it, end, &mopts->pwm_bits, &err))
+                    continue;
+                if (ConsumeIntFlag("pwm-lsb-nanoseconds", it, end,
+                                   &mopts->pwm_lsb_nanoseconds, &err))
+                    continue;
+                if (ConsumeIntFlag("pwm-dither-bits", it, end,
+                                   &mopts->pwm_dither_bits, &err))
+                    continue;
+                if (ConsumeIntFlag("row-addr-type", it, end,
+                                   &mopts->row_address_type, &err))
+                    continue;
+                if (ConsumeIntFlag("limit-refresh", it, end,
+                                   &mopts->limit_refresh_rate_hz, &err))
+                    continue;
+                if (ConsumeBoolFlag("show-refresh", it, &mopts->show_refresh_rate))
+                    continue;
+                if (ConsumeBoolFlag("inverse", it, &mopts->inverse_colors))
+                    continue;
+                // We don't have a swap_green_blue option anymore, but we simulate the
+                // flag for a while.
+                bool swap_green_blue;
+                if (ConsumeBoolFlag("swap-green-blue", it, &swap_green_blue))
+                {
+                    if (strlen(mopts->led_rgb_sequence) == 3)
+                    {
+                        char *new_sequence = strdup(mopts->led_rgb_sequence);
+                        new_sequence[0] = mopts->led_rgb_sequence[0];
+                        new_sequence[1] = mopts->led_rgb_sequence[2];
+                        new_sequence[2] = mopts->led_rgb_sequence[1];
+                        mopts->led_rgb_sequence = new_sequence; // leaking. Ignore.
+                    }
+                    continue;
+                }
+                bool allow_hardware_pulsing = !mopts->disable_hardware_pulsing;
+                if (ConsumeBoolFlag("hardware-pulse", it, &allow_hardware_pulsing))
+                {
+                    mopts->disable_hardware_pulsing = !allow_hardware_pulsing;
+                    continue;
+                }
 
-        // 		bool request_help = false;
-        // 		if (ConsumeBoolFlag("help", it, &request_help) && request_help)
-        // 		{
-        // 			// In that case, we pretend to have failure in parsing, which will
-        // 			// trigger printing the usage(). Typically :)
-        // 			return false;
-        // 		}
+                bool request_help = false;
+                if (ConsumeBoolFlag("help", it, &request_help) && request_help)
+                {
+                    // In that case, we pretend to have failure in parsing, which will
+                    // trigger printing the usage(). Typically :)
+                    return false;
+                }
 
-        // 		//-- Runtime options.
-        // 		if (ConsumeIntFlag("slowdown-gpio", it, end, &ropts->gpio_slowdown, &err))
-        // 			continue;
-        // 		if (ropts->daemon >= 0 && ConsumeBoolFlag("daemon", it, &bool_scratch))
-        // 		{
-        // 			ropts->daemon = bool_scratch ? 1 : 0;
-        // 			continue;
-        // 		}
-        // 		if (ropts->drop_privileges >= 0 &&
-        // 			ConsumeBoolFlag("drop-privs", it, &bool_scratch))
-        // 		{
-        // 			ropts->drop_privileges = bool_scratch ? 1 : 0;
-        // 			continue;
-        // 		}
-        // 		if (ConsumeStringFlag("drop-priv-user", it, end,
-        // 							  &ropts->drop_priv_user, &err))
-        // 		{
-        // 			continue;
-        // 		}
-        // 		if (ConsumeStringFlag("drop-priv-group", it, end,
-        // 							  &ropts->drop_priv_group, &err))
-        // 		{
-        // 			continue;
-        // 		}
+                //-- Runtime options.
+                if (ConsumeIntFlag("slowdown-gpio", it, end, &ropts->gpio_slowdown, &err))
+                    continue;
+                if (ropts->daemon >= 0 && ConsumeBoolFlag("daemon", it, &bool_scratch))
+                {
+                    ropts->daemon = bool_scratch ? 1 : 0;
+                    continue;
+                }
+                if (ropts->drop_privileges >= 0 &&
+                    ConsumeBoolFlag("drop-privs", it, &bool_scratch))
+                {
+                    ropts->drop_privileges = bool_scratch ? 1 : 0;
+                    continue;
+                }
+                if (ConsumeStringFlag("drop-priv-user", it, end,
+                                      &ropts->drop_priv_user, &err))
+                {
+                    continue;
+                }
+                if (ConsumeStringFlag("drop-priv-group", it, end,
+                                      &ropts->drop_priv_group, &err))
+                {
+                    continue;
+                }
 
-        // 		if (strncmp(*it, OPTION_PREFIX, OPTION_PREFIX_LEN) == 0)
-        // 		{
-        // 			fprintf(stderr, "Option %s starts with %s but it is unknown. Typo?\n",
-        // 					*it, OPTION_PREFIX);
-        // 		}
-        // 	}
-        // 	unused_options.push_back(*it);
-        // }
+                if (strncmp(*it, OPTION_PREFIX, OPTION_PREFIX_LEN) == 0)
+                {
+                    fprintf(stderr, "Option %s starts with %s but it is unknown. Typo?\n",
+                            *it, OPTION_PREFIX);
+                }
+            }
+            unused_options.push_back(*it);
+        }
 
-        // if (err > 0)
-        // {
-        // 	return false;
-        // }
+        if (err > 0)
+        {
+            return false;
+        }
 
-        // if (remove_consumed_options)
-        // {
-        // 	// Success. Re-arrange flags to only include the ones not consumed.
-        // 	argc = (int)unused_options.size();
-        // 	for (int i = 0; i < argc; ++i)
-        // 	{
-        // 		argv[i] = unused_options[i];
-        // 	}
-        // }
+        if (remove_consumed_options)
+        {
+            // Success. Re-arrange flags to only include the ones not consumed.
+            argc = (int)unused_options.size();
+            for (int i = 0; i < argc; ++i)
+            {
+                argv[i] = unused_options[i];
+            }
+        }
         return true;
     }
 
