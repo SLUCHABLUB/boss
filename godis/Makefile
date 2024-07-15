@@ -1,6 +1,6 @@
 CFLAGS=-Wall -O3 -g -Wextra -Wno-unused-parameter
 CXXFLAGS=$(CFLAGS)
-LDFLAGS=-lsfml-graphics -lsfml-window -lsfml-system
+LDFLAGS=-lsfml-graphics -lsfml-window -lsfml-system -lpthread
 RGB_INCDIR=../include
 CXX:=g++
 
