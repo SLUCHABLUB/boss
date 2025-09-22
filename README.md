@@ -115,7 +115,7 @@ Let's do it
 ------------
 This documentation is split into parts that help you through the process
 
-  1. <a href="wiring.md"><img src="img/wire-up-icon.png"></a>
+  1. :smile::boom::droplet:
     [**Wire up the matrix to your Pi**](./wiring.md). This document describes
     what goes where. You might also be interested
     in [breakout boards](./adapter) for that.
